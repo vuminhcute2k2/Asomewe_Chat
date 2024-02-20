@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "263385044572",
+    "project_id": "asomewe-chat",
+    "storage_bucket": "asomewe-chat.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:263385044572:android:bee9b1645a051a6147f899",
+        "android_client_info": {
+          "package_name": "com.example.awesome_chat"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBFyRHFRbLocD6OcQiDDAltlDBbgYW4GRc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
