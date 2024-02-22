@@ -22,7 +22,7 @@ class SplashController extends GetxController{
     }
     else{
       Future.delayed(const Duration(seconds: 1),(){
-       // Get.offNamed(AppRouterName.NavigatorHome);
+       Get.offNamed(AppRouterName.NavigatorHome);
       });
     }
     //
