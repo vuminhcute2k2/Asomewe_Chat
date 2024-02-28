@@ -1,6 +1,8 @@
 import 'package:awesome_chat/app/generated/widget_tree.dart';
+import 'package:awesome_chat/app/modules/home/views/editaccount_screen.dart';
 import 'package:awesome_chat/app/modules/home/views/homepase_screen.dart';
 import 'package:awesome_chat/app/modules/home/views/navigatorhome_screen.dart';
+import 'package:awesome_chat/app/modules/home/views/profile_screen.dart';
 import 'package:awesome_chat/app/modules/login/views/login_screen.dart';
 import 'package:awesome_chat/app/modules/register/views/register_screen.dart';
 import 'package:awesome_chat/app/modules/splash/views/splash_screen.dart';
@@ -32,14 +34,24 @@ class AppRouter {
         );  
         case AppRouterName.Home:
         return GetPageRoute(
-          page: () =>  HomePaseScreen(),
+          page: () =>const  HomePaseScreen(),
           settings: settings,
         );   
         case AppRouterName.NavigatorHome:
         return GetPageRoute(
           page: () => const NavigatorHomeScreen(),
           settings: settings,
-        );   
+        ); 
+        case AppRouterName.Profile:
+        return GetPageRoute(
+          page: () => const ProfileScreen(),
+          settings: settings,
+        ); 
+        case AppRouterName.EditAccount:
+        return GetPageRoute(
+          page: () => const EditAccountScreen(),
+          settings: settings,
+        );    
     }
     return null;
   }
@@ -50,6 +62,9 @@ class AppRouterName{
   static const Register = "/register";
   static const Login = "/login";
   static const Home = "/home";
+  static const Profile='/profile';
   static const NavigatorHome = '/navigatorHome';
+  static const EditAccount = '/editaccount';
+
 
 }
