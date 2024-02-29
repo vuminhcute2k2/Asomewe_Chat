@@ -1,5 +1,5 @@
 
-import 'package:awesome_chat/app/model/user.dart' as model;
+import 'package:awesome_chat/model/user.dart' as model;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
@@ -14,8 +14,9 @@ class Auth extends GetxController {
     required String email,
     required String fullname,
     required String image,
-    required String about,
+    required String numberphone,
     required String password,
+    required String birthday,
   }) async {
     String res = "Some error occurred";
     try {
@@ -34,7 +35,9 @@ class Auth extends GetxController {
             followers: [],
             following: [],
             image: image,
-            about: about);
+            numberphone: numberphone,
+            birthday: birthday,
+            );
         await firestore.collection('users').doc(cred.user!.uid).set(
               user.toJson(),
             );

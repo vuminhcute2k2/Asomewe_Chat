@@ -16,7 +16,8 @@ class RegisterController extends GetxController{
       fullname: fullname.text.trim(),
       password: password.text.trim(),
       image: '',
-      about: '',
+      numberphone: '',
+      birthday: '',
 
     );
 
@@ -25,7 +26,7 @@ class RegisterController extends GetxController{
 
     if (errorMessage.isEmpty) {
       // Đăng ký thành công,
-      Get.toNamed(AppRouterName.Home);
+      Get.toNamed(AppRouterName.NavigatorHome);
     } else {
       // Hiển thị thông báo lỗi
       Get.snackbar('Error', errorMessage);

@@ -15,6 +15,17 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   LoginController loginController =Get.put(LoginController());
   @override
+  void initState() {
+    super.initState();
+    loginController.initSharedPref();
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+  }
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
         backgroundColor: Colors.white,

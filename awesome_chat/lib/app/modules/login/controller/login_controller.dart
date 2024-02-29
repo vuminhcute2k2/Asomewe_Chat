@@ -1,4 +1,5 @@
 import 'package:awesome_chat/app/common/authentication.dart';
+import 'package:awesome_chat/app/modules/home/controllers/profile_controller.dart';
 import 'package:awesome_chat/app/routers/app_routers.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -26,6 +27,7 @@ class LoginController extends GetxController {
         password: passwordController.text.trim(),
       );
       if (res == "success") {
+       // updateUserData();
         Get.toNamed(AppRouterName.NavigatorHome);
       } else {
         // Hiển thị thông báo lỗi
@@ -42,5 +44,11 @@ class LoginController extends GetxController {
       print("Error: $e");
     }
   }
-
+  // Hàm này để cập nhật trạng thái người dùng
+  void updateUserData() {
+    // Gọi hàm cập nhật người dùng trong ProfileController hoặc nơi bạn lưu trữ trạng thái người dùng
+    ProfileController profileController = Get.find();
+    profileController.loadUserData();
+   // profileController.update();
+  }
 }
