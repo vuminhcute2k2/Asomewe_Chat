@@ -58,10 +58,11 @@ class _HomePaseScreenState extends State<HomePaseScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SingleChildScrollView(
-        child: SafeArea(
-          child: Container(
+    return SafeArea(
+      top: false,
+      child: Scaffold(
+        body: SingleChildScrollView(
+          child: SizedBox(
             height: 800,
             child: Column(
               children: [
