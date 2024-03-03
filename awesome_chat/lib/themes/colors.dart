@@ -10,4 +10,5 @@ class AppColors{
   );
   static const colorGrayText = Color(0XFF999999);
   static const colorVioletText = Color(0XFF4356B4);
+  static const colorGrayBackground = Color(0XFFF6F6F6);
 }

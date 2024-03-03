@@ -1,7 +1,9 @@
+import 'package:awesome_chat/app/modules/home/tapbarfriends/controller/friends_controller.dart';
 import 'package:awesome_chat/app/modules/home/tapbarfriends/views/friends_screen.dart';
 import 'package:awesome_chat/themes/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:get/get.dart';
 
 class ListFriendsScreen extends StatefulWidget {
   const ListFriendsScreen({Key? key}) : super(key: key);
@@ -18,6 +20,7 @@ class _ListFriendsScreenState extends State<ListFriendsScreen>
   void initState() {
     super.initState();
     tabviewController = TabController(length: 3, vsync: this);
+    Get.put(FriendsController()); 
   }
 
   @override
@@ -192,7 +195,7 @@ class _ListFriendsScreenState extends State<ListFriendsScreen>
                         child: TabBarView(
                           controller: tabviewController,
                           children: [
-                            ItemFriends(context),
+                            ItemFriends(),
                             const Center(
                               child: Text(
                                 "Tất cả ",
