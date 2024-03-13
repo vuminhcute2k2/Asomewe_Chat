@@ -2,7 +2,8 @@
   "project_info": {
     "project_number": "263385044572",
     "project_id": "asomewe-chat",
-    "storage_bucket": "asomewe-chat.appspot.com"
+    "storage_bucket": "asomewe-chat.appspot.com",
+    "firebase_url": "https://asomewe-chat-default-rtdb.asia-southeast1.firebasedatabase.app/"
   },
   "client": [
     {

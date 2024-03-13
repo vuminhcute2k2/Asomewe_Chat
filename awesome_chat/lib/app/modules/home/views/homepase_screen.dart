@@ -1,6 +1,8 @@
+import 'package:awesome_chat/app/routers/app_routers.dart';
 import 'package:awesome_chat/themes/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:get/get.dart';
 
 class HomePaseScreen extends StatefulWidget {
   const HomePaseScreen({super.key});
@@ -101,17 +103,22 @@ class _HomePaseScreenState extends State<HomePaseScreen> {
                                       ),
                                       Align(
                                         alignment: Alignment.bottomRight,
-                                        child: Container(
-                                          width: 35,
-                                          height: 35,
-                                          decoration: const BoxDecoration(
-                                            borderRadius: BorderRadius.all(
-                                                Radius.circular(30)),
-                                            color: Colors.white,
-                                          ),
-                                          padding: const EdgeInsets.all(5),
-                                          child: SvgPicture.asset(
-                                            'assets/images/img_user.svg',
+                                        child: GestureDetector(
+                                          onTap: () {
+                                            
+                                          },
+                                          child: Container(
+                                            width: 35,
+                                            height: 35,
+                                            decoration: const BoxDecoration(
+                                              borderRadius: BorderRadius.all(
+                                                  Radius.circular(30)),
+                                              color: Colors.white,
+                                            ),
+                                            padding: const EdgeInsets.all(5),
+                                            child: SvgPicture.asset(
+                                              'assets/images/img_user.svg',
+                                            ),
                                           ),
                                         ),
                                       ),
@@ -171,48 +178,53 @@ class _HomePaseScreenState extends State<HomePaseScreen> {
                         scrollDirection: Axis.vertical,
                         itemCount: listvartical.length,
                         itemBuilder: (context, index) {
-                          return Container(
-                            margin:const EdgeInsets.symmetric(horizontal: 10),
-                            width: double.infinity,
-                            color: Colors.white,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Container(
-                                  width: 70,
-                                  height: 70,
-                                  margin: EdgeInsets.only(bottom: 10, right: 5),
-                                  child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(35),
-                                      child: Image.network(
-                                        listhorizontal[index].avatar,
-                                      )),
-                                ),
-                                const SizedBox(width: 10,),
-                                Expanded(
-                                  child: Container(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Container(
-                                          child: Text(
-                                            listvartical[index].username,
-                                            textAlign: TextAlign.left,
-                                            style:const TextStyle(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.bold,
+                          return GestureDetector(
+                            onTap: () {
+                              Get.offAllNamed(AppRouterName.Chat);
+                            },
+                            child: Container(
+                              margin:const EdgeInsets.symmetric(horizontal: 10),
+                              width: double.infinity,
+                              color: Colors.white,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Container(
+                                    width: 70,
+                                    height: 70,
+                                    margin:const EdgeInsets.only(bottom: 10, right: 5),
+                                    child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(35),
+                                        child: Image.network(
+                                          listhorizontal[index].avatar,
+                                        )),
+                                  ),
+                                  const SizedBox(width: 10,),
+                                  Expanded(
+                                    child: Container(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Container(
+                                            child: Text(
+                                              listvartical[index].username,
+                                              textAlign: TextAlign.left,
+                                              style:const TextStyle(
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.bold,
+                                              ),
                                             ),
                                           ),
-                                        ),
-                                        Text(listvartical[index].message),
-                                        Container(width: double.infinity,height: 1,color: AppColors.colorGrayText,margin:const EdgeInsets.symmetric(vertical: 25),)
-                                      ],
+                                          Text(listvartical[index].message),
+                                          Container(width: double.infinity,height: 1,color: AppColors.colorGrayText,margin:const EdgeInsets.symmetric(vertical: 25),)
+                                        ],
+                                      ),
                                     ),
                                   ),
-                                ),
-                                const Text('11:24'),
-                              ],
+                                  const Text('11:24'),
+                                ],
+                              ),
                             ),
                           );
                         }),

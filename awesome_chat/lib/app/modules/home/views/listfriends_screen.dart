@@ -1,4 +1,6 @@
+import 'package:awesome_chat/app/modules/home/tapbarfriends/controller/allfriends_controller.dart';
 import 'package:awesome_chat/app/modules/home/tapbarfriends/controller/friends_controller.dart';
+import 'package:awesome_chat/app/modules/home/tapbarfriends/views/allfriends_screen.dart';
 import 'package:awesome_chat/app/modules/home/tapbarfriends/views/friends_screen.dart';
 import 'package:awesome_chat/themes/colors.dart';
 import 'package:flutter/material.dart';
@@ -15,12 +17,16 @@ class ListFriendsScreen extends StatefulWidget {
 class _ListFriendsScreenState extends State<ListFriendsScreen>
     with TickerProviderStateMixin {
   late TabController tabviewController;
+  final AllFriendsController allFriendsController =
+      Get.put(AllFriendsController());
 
   @override
   void initState() {
     super.initState();
     tabviewController = TabController(length: 3, vsync: this);
-    Get.put(FriendsController()); 
+    if (tabviewController != null) {
+      Get.put(FriendsController());
+    }
   }
 
   @override
@@ -45,8 +51,8 @@ class _ListFriendsScreenState extends State<ListFriendsScreen>
                         child: Column(
                           children: [
                             Container(
-                              margin: const EdgeInsets.symmetric(
-                                  horizontal: 20),
+                              margin:
+                                  const EdgeInsets.symmetric(horizontal: 20),
                               child: Row(
                                 // mainAxisAlignment: MainAxisAlignment.spaceAround,
                                 children: [
@@ -89,8 +95,8 @@ class _ListFriendsScreenState extends State<ListFriendsScreen>
                               decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(16),
                                   color: Colors.white),
-                              margin: const EdgeInsets.symmetric(
-                                  horizontal: 20),
+                              margin:
+                                  const EdgeInsets.symmetric(horizontal: 20),
                               child: TextField(
                                 onChanged: (textEntered) {
                                   // searchController.nameSongText.value = textEntered;
@@ -141,10 +147,12 @@ class _ListFriendsScreenState extends State<ListFriendsScreen>
                           borderSide: BorderSide(
                             strokeAlign: BorderSide.strokeAlignCenter,
                             width: 3, // Độ dày của gạch chân
-                            color: AppColors.colorVioletText, // Màu sắc của gạch chân
+                            color: AppColors
+                                .colorVioletText, // Màu sắc của gạch chân
                           ),
-                          insets:
-                              EdgeInsets.symmetric(horizontal: -30), // Khoảng cách giữa gạch chân và nội dung Tab
+                          insets: EdgeInsets.symmetric(
+                              horizontal:
+                                  -30), // Khoảng cách giữa gạch chân và nội dung Tab
                         ),
                         tabs: [
                           Tab(
@@ -190,26 +198,25 @@ class _ListFriendsScreenState extends State<ListFriendsScreen>
                       ),
                     ),
                     Expanded(
-                      child: SizedBox(
-                        height: MediaQuery.of(context).size.height * 0.75, // Giảm chiều cao của TabBarView để tránh lỗi
-                        child: TabBarView(
-                          controller: tabviewController,
-                          children: [
-                            ItemFriends(),
-                            const Center(
-                              child: Text(
-                                "Tất cả ",
-                                style: TextStyle(color: Colors.black),
-                              ),
+                      child: TabBarView(
+                        controller: tabviewController,
+                        children: [
+                          //ItemFriends(controller: Get.find<FriendsController>()),
+                          ItemFriends(),
+                          Obx(() {
+                            if (allFriendsController.isLoading.value) {
+                              return Center(child: CircularProgressIndicator());
+                            } else {
+                              return ItemAllFriends();
+                            }
+                          }),
+                          const Center(
+                            child: Text(
+                              "Yêu cầu",
+                              style: TextStyle(color: Colors.black),
                             ),
-                            const Center(
-                              child: Text(
-                                "Yêu cầu",
-                                style: TextStyle(color: Colors.black),
-                              ),
-                            ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
                     SizedBox(

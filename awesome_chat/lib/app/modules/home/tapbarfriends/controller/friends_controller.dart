@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class FriendsController extends GetxController {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -9,7 +10,7 @@ class FriendsController extends GetxController {
   final RxMap<String, List<DocumentSnapshot>> groupedUsers = <String, List<DocumentSnapshot>>{}.obs;
 
   @override
-  void onInit() {
+  void onInit(){
     fetchFriends();
     super.onInit();
   }

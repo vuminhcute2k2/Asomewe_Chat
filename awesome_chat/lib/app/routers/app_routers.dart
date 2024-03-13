@@ -1,6 +1,8 @@
 import 'package:awesome_chat/app/generated/widget_tree.dart';
+import 'package:awesome_chat/app/modules/chat/views/chat_screen.dart';
 import 'package:awesome_chat/app/modules/home/views/editaccount_screen.dart';
 import 'package:awesome_chat/app/modules/home/views/homepase_screen.dart';
+import 'package:awesome_chat/app/modules/home/views/listfriends_screen.dart';
 import 'package:awesome_chat/app/modules/home/views/navigatorhome_screen.dart';
 import 'package:awesome_chat/app/modules/home/views/profile_screen.dart';
 import 'package:awesome_chat/app/modules/login/views/login_screen.dart';
@@ -51,7 +53,18 @@ class AppRouter {
         return GetPageRoute(
           page: () => const EditAccountScreen(),
           settings: settings,
-        );    
+        );
+        case AppRouterName.ListFriends:
+        return GetPageRoute(
+          page: () => const ListFriendsScreen(),
+          settings: settings,
+        );
+        case AppRouterName.Chat:
+        return GetPageRoute(
+          page: () => const ChatScreen(),
+          settings: settings,
+        );
+
     }
     return null;
   }
@@ -65,6 +78,8 @@ class AppRouterName{
   static const Profile='/profile';
   static const NavigatorHome = '/navigatorHome';
   static const EditAccount = '/editaccount';
+  static const ListFriends ='/listfriends';
+  static const Chat ='/chat';
 
 
 }
