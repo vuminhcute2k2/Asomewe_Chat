@@ -11,11 +11,13 @@ class AllFriendsController extends GetxController {
 
   RxBool isLoading = true.obs;
   List<Map<String, dynamic>> allFriendsData = [];
-
+  Map<String, List<DataSnapshot>> groupedUsers =
+      <String, List<DataSnapshot>>{}.obs;
+  RxList<String> letters = <String>[].obs;
   @override
   void onInit() {
     fetchFriends();
-    fetchAllfriends(); // lấy dữ liệu từ Realtime Database
+    fetchAllFriends(); // lấy dữ liệu từ Realtime Database
     super.onInit();
   }
 
@@ -28,8 +30,6 @@ class AllFriendsController extends GetxController {
       final List<Map<String, dynamic>> userDataList = querySnapshot.docs
           .map((doc) => doc.data() as Map<String, dynamic>)
           .toList();
-       // Sắp xếp danh sách bạn bè theo tên (hoặc một trường dữ liệu khác)
-      // userDataList.sort((a, b) => a['fullname'].compareTo(b['fullname']));
 
       print('Fetched data from Firestore: $userDataList');
       //ma hoa thanh file chuoi json
@@ -55,7 +55,7 @@ class AllFriendsController extends GetxController {
       List<Map<String, dynamic>> dataList) async {
     print('Start updating friends on Realtime Database...');
     try {
-       // Xóa dữ liệu cũ trên Realtime Database
+      // Xóa dữ liệu cũ trên Realtime Database
       await _database.child('all_friends').remove();
       // Tạo một danh sách các Future để chờ hoàn thành tất cả các lệnh set
       List<Future<void>> futures = [];
@@ -83,29 +83,62 @@ class AllFriendsController extends GetxController {
   }
 
 //hàm để cập nhật dữ liệu trên realtime vào allFriendsData để cập nhật dữ liệu lên màn hình
-  Future<void> fetchAllfriends() async {
-    isLoading.value = true;
+
+  Future<void> fetchAllFriends() async {
+    isLoading(true);
     try {
-      final QuerySnapshot querySnapshot =
-          await FirebaseFirestore.instance.collection('all_friends').get();
-      final List<Map<String, dynamic>> friendsDataList = querySnapshot.docs
-          .map((doc) => doc.data() as Map<String, dynamic>)
-          .toList();
+      // Thực hiện theo dõi sự kiện thay đổi dữ liệu từ Realtime Database
+      _database
+          .child('all_friends')
+          .orderByChild('fullname')
+          .onValue
+          .listen((event) {
+        final dataSnapshot = event.snapshot;
 
-      print('Fetched data from Realtime Database: $friendsDataList');
+        final Map<dynamic, dynamic>? dataSnapshotValue =
+            dataSnapshot.value as Map<dynamic, dynamic>?;
 
-      // Cập nhật danh sách bạn bè vào biến allFriendsData của AllFriendsController
-      allFriendsData.clear();
-      allFriendsData.addAll(friendsDataList);
+        if (dataSnapshotValue != null) {
+          // Tạo một list để lưu các chữ cái đầu tiên
+          List<String> newLetters = [];
+          // // Tạo một list để lưu các chữ cái đầu tiên và sắp xếp chúng theo thứ tự bảng chữ cái
+          // List<String> newLetters = dataSnapshotValue.keys
+          //     .map<String>((key) => key.substring(0, 1).toUpperCase())
+          //     .toSet()
+          //     .toList()
+          //   ..sort();
+          // Tạo một map để nhóm người dùng có cùng chữ cái đầu tiên vào 1 nhóm
+          Map<String, List<DataSnapshot>> newGroupedUsers = {};
 
-      // Kích hoạt sự kiện build để cập nhật danh sách bạn bè trên màn hình
-      update();
+          dataSnapshotValue.forEach((key, value) {
+            if (value is Map<dynamic, dynamic>) {
+              String? fullname = value['fullname'];
+              if (fullname != null && fullname.isNotEmpty) {
+                String firstLetter = fullname[0].toUpperCase();
+                // Kiểm tra xem đã có chữ cái đầu tiên chưa, nếu chưa thì tạo mới
+                if (!newGroupedUsers.containsKey(firstLetter)) {
+                  newLetters.add(firstLetter);
+                  newGroupedUsers[firstLetter] = [];
+                }
 
-      print('Updated friends list on the screen');
+                // Tạo một đối tượng DataSnapshot và thêm vào nhóm tương ứng
+                DataSnapshot snapshot = event.snapshot;
+                newGroupedUsers[firstLetter]!.add(snapshot);
+              }
+            }
+          });
+
+          // Cập nhật danh sách chữ cái đầu tiên
+          letters.assignAll(newLetters);
+          // Cập nhật nhóm người dùng
+          groupedUsers.assignAll(newGroupedUsers);
+        }
+
+        isLoading(false); // Đánh dấu là đã tải xong dữ liệu
+      });
     } catch (e) {
-      print('Error fetching friends from Realtime Database: $e');
-    } finally {
-      isLoading.value = false;
+      // Xử lý lỗi
+      isLoading(false); // Đánh dấu là đã tải xong dữ liệu (nếu có lỗi)
     }
   }
 }

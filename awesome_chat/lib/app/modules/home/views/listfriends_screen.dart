@@ -205,7 +205,7 @@ class _ListFriendsScreenState extends State<ListFriendsScreen>
                           ItemFriends(),
                           Obx(() {
                             if (allFriendsController.isLoading.value) {
-                              return Center(child: CircularProgressIndicator());
+                              return const Center(child: CircularProgressIndicator());
                             } else {
                               return ItemAllFriends();
                             }
