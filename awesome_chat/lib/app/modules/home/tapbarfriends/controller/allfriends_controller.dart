@@ -1,9 +1,15 @@
 import 'dart:convert';
 
+import 'package:awesome_chat/model/request_friends.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import 'dart:convert';
+
+
+import 'package:get/get.dart';
 
 class AllFriendsController extends GetxController {
   final DatabaseReference _database = FirebaseDatabase.instance.ref();
@@ -141,4 +147,64 @@ class AllFriendsController extends GetxController {
       isLoading(false); // Đánh dấu là đã tải xong dữ liệu (nếu có lỗi)
     }
   }
+  //hàm gửi lời mời kết bạn 
+  void sendFriendRequest(String senderId, String receiverId, String senderName, String? senderPhotoUrl, String? receiverPhotoUrl,String? receiverName) {
+  FriendRequest friendRequest = FriendRequest(
+    senderId: senderId,
+    receiverId: receiverId,
+    senderName: senderName,
+    receiverName: receiverName ?? '',
+    senderPhotoUrl: senderPhotoUrl ?? '',
+    receiverPhotoUrl: receiverPhotoUrl ?? '',
+  );
+
+  DatabaseReference reference = _database.child('request_friends').push();
+  reference.set(friendRequest.toJson()).then((value) {
+    // Cập nhật thành công, có thể hiển thị thông báo hoặc thực hiện các hành động khác ở đây
+    print('Friend request sent successfully');
+  }).catchError((error) {
+    // Xử lý lỗi khi gửi yêu cầu kết bạn
+    print('Error sending friend request: $error');
+  });
+}
+
+
+Future<String?> getSenderName(String senderId) async {
+  try {
+    DocumentSnapshot documentSnapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(senderId)
+        .get();
+
+    if (documentSnapshot.exists) {
+      Map<String, dynamic> userData = documentSnapshot.data() as Map<String, dynamic>;
+      String? senderName = userData['fullname'] as String?;
+      return senderName;
+    } else {
+      return null;
+    }
+  } catch (e) {
+    print('Error getting sender name: $e');
+    return null;
+  }
+}
+Future<Map<String, dynamic>?> getUserData(String userId) async {
+  try {
+    DocumentSnapshot documentSnapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(userId)
+        .get();
+
+    if (documentSnapshot.exists) {
+      return documentSnapshot.data() as Map<String, dynamic>;
+    } else {
+      return null;
+    }
+  } catch (e) {
+    print('Error getting user data: $e');
+    return null;
+  }
+}
+
+
 }

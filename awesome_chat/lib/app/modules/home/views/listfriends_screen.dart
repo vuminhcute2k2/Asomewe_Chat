@@ -2,6 +2,7 @@ import 'package:awesome_chat/app/modules/home/tapbarfriends/controller/allfriend
 import 'package:awesome_chat/app/modules/home/tapbarfriends/controller/friends_controller.dart';
 import 'package:awesome_chat/app/modules/home/tapbarfriends/views/allfriends_screen.dart';
 import 'package:awesome_chat/app/modules/home/tapbarfriends/views/friends_screen.dart';
+import 'package:awesome_chat/app/modules/home/tapbarfriends/views/requestfriends_screen.dart';
 import 'package:awesome_chat/themes/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -210,12 +211,7 @@ class _ListFriendsScreenState extends State<ListFriendsScreen>
                               return ItemAllFriends();
                             }
                           }),
-                          const Center(
-                            child: Text(
-                              "Yêu cầu",
-                              style: TextStyle(color: Colors.black),
-                            ),
-                          ),
+                          ItemRequest(),
                         ],
                       ),
                     ),
