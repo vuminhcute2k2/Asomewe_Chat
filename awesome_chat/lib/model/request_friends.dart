@@ -27,4 +27,16 @@ class FriendRequest {
       'receiverPhotoUrl':receiverPhotoUrl,
     };
   }
+  // Phương thức từJson để chuyển đổi một map thành một đối tượng FriendRequest
+  static FriendRequest fromJson(Map<String, dynamic> json) {
+    return FriendRequest(
+      senderId: json['senderId'],
+      receiverId: json['receiverId'],
+      senderName: json['senderName'],
+      receiverName: json['receiverName'],
+      senderPhotoUrl: json['senderPhotoUrl'],
+      receiverPhotoUrl: json['receiverPhotoUrl'],
+    );
+  }
+  
 }

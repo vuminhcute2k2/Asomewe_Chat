@@ -1,4 +1,5 @@
 import 'package:awesome_chat/app/generated/widget_tree.dart';
+import 'package:awesome_chat/app/modules/home/tapbarfriends/controller/requestfriends_controller.dart';
 import 'package:awesome_chat/app/routers/app_routers.dart';
 import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -28,18 +29,23 @@ class SplashController extends GetxController{
     //
   }
    Future<void> requestPermission() async {
-    final status = await Permission.storage.status;
-    if (status == PermissionStatus.granted) {
+  final status = await Permission.storage.status;
+  if (status == PermissionStatus.granted) {
+    initSharedPref();
+  } else if (status == PermissionStatus.denied) {
+    try {
+      await Permission.storage.request();
       initSharedPref();
-    } else {
-      try {
-        await Permission.storage.request();
-        initSharedPref();
-      } catch (e) {
-        // Xử lý lỗi nếu cần
-        print("Error requesting storage permission: $e");
-      }
+    } catch (e) {
+      print("Error requesting storage permission: $e");
     }
+  } else if (status == PermissionStatus.permanentlyDenied) {
+    // Xử lý trường hợp quyền bị từ chối vĩnh viễn
+    // Ví dụ: Hiển thị một hộp thoại thông báo yêu cầu người dùng mở cài đặt và cấp quyền
+  } else {
+    // Xử lý trường hợp còn lại
   }
+}
+   
 
 }

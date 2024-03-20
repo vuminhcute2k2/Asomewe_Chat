@@ -153,21 +153,14 @@ class AllFriendsController extends GetxController {
     senderId: senderId,
     receiverId: receiverId,
     senderName: senderName,
-    receiverName: receiverName ?? '',
-    senderPhotoUrl: senderPhotoUrl ?? '',
-    receiverPhotoUrl: receiverPhotoUrl ?? '',
+    receiverName: receiverName?? '',
+    senderPhotoUrl: senderPhotoUrl??'',
+    receiverPhotoUrl: receiverPhotoUrl??'',
   );
 
   DatabaseReference reference = _database.child('request_friends').push();
-  reference.set(friendRequest.toJson()).then((value) {
-    // Cập nhật thành công, có thể hiển thị thông báo hoặc thực hiện các hành động khác ở đây
-    print('Friend request sent successfully');
-  }).catchError((error) {
-    // Xử lý lỗi khi gửi yêu cầu kết bạn
-    print('Error sending friend request: $error');
-  });
+  reference.set(friendRequest.toJson());
 }
-
 
 Future<String?> getSenderName(String senderId) async {
   try {
@@ -205,6 +198,8 @@ Future<Map<String, dynamic>?> getUserData(String userId) async {
     return null;
   }
 }
+
+
 
 
 }

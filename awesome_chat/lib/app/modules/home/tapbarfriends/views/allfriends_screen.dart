@@ -76,7 +76,6 @@ class ItemAllFriends extends GetView<AllFriendsController> {
                                       title: Text(fullname ?? 'No name'),
                                       subtitle: Text(email ?? 'No email'),
                                       trailing: GestureDetector(
-                            
                                         onTap: () async {
                                           User? currentUser =
                                               FirebaseAuth.instance.currentUser;
@@ -89,7 +88,9 @@ class ItemAllFriends extends GetView<AllFriendsController> {
 
                                           if (currentUser != null) {
                                             senderId = currentUser.uid;
-                                            receiverId = userId;
+                                            receiverId = userData['uid'];
+                                            receiverName = userData['fullname'];
+                                            receiverPhotoUrl = userData['image'];
 
                                             try {
                                               DocumentSnapshot snapshot =
@@ -124,7 +125,7 @@ class ItemAllFriends extends GetView<AllFriendsController> {
                                               senderName != null) {
                                             controller.sendFriendRequest(
                                               senderId,
-                                              receiverId,
+                                              receiverId, 
                                               senderName,
                                               senderPhotoUrl,
                                               receiverPhotoUrl,
@@ -134,7 +135,6 @@ class ItemAllFriends extends GetView<AllFriendsController> {
                                             // Xử lý trường hợp không tìm thấy thông tin cần thiết
                                           }
                                         },
-
                                         child: Container(
                                           width: 73,
                                           height: 30,

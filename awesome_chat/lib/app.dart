@@ -1,3 +1,4 @@
+import 'package:awesome_chat/app/modules/home/tapbarfriends/controller/requestfriends_controller.dart';
 import 'package:awesome_chat/app/modules/home/views/navigatorhome_screen.dart';
 import 'package:awesome_chat/app/modules/login/views/login_screen.dart';
 import 'package:awesome_chat/app/routers/app_routers.dart';
@@ -14,6 +15,9 @@ class AwesomeChat extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       initialRoute: AppRouterName.Splash,
       onGenerateRoute: AppRouter.onGenerateRoute,
+      // initialBinding: BindingsBuilder(() {
+      //   Get.put(RequestFriendsController());
+      // }),
       home: StreamBuilder(
         stream: FirebaseAuth.instance.authStateChanges(),
         builder: (context, AsyncSnapshot<User?> snapshot) {

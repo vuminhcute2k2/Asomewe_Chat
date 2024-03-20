@@ -24,7 +24,7 @@ class _SplashScreenState extends State<SplashScreen> {
     //   // );
     //   Get.offAndToNamed(AppRouterName.Continue);
     // });
-    splashController.requestPermission();
+    //splashController.requestPermission();
     super.initState();
     
   }

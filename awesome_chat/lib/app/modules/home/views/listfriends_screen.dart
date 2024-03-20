@@ -1,5 +1,6 @@
 import 'package:awesome_chat/app/modules/home/tapbarfriends/controller/allfriends_controller.dart';
 import 'package:awesome_chat/app/modules/home/tapbarfriends/controller/friends_controller.dart';
+import 'package:awesome_chat/app/modules/home/tapbarfriends/controller/requestfriends_controller.dart';
 import 'package:awesome_chat/app/modules/home/tapbarfriends/views/allfriends_screen.dart';
 import 'package:awesome_chat/app/modules/home/tapbarfriends/views/friends_screen.dart';
 import 'package:awesome_chat/app/modules/home/tapbarfriends/views/requestfriends_screen.dart';
@@ -20,13 +21,14 @@ class _ListFriendsScreenState extends State<ListFriendsScreen>
   late TabController tabviewController;
   final AllFriendsController allFriendsController =
       Get.put(AllFriendsController());
-
+  // final RequestFriendsController requestFriendsController = Get.put(RequestFriendsController());
   @override
   void initState() {
     super.initState();
     tabviewController = TabController(length: 3, vsync: this);
     if (tabviewController != null) {
       Get.put(FriendsController());
+      // Get.put(RequestFriendsController()); // Thêm controller mới
     }
   }
 
@@ -211,7 +213,14 @@ class _ListFriendsScreenState extends State<ListFriendsScreen>
                               return ItemAllFriends();
                             }
                           }),
-                          ItemRequest(),
+                          Obx(() {
+                            if (allFriendsController.isLoading.value) {
+                              return const Center(child: CircularProgressIndicator());
+                            } else {
+                              return RequestItem();
+                              
+                            }
+                          }),
                         ],
                       ),
                     ),

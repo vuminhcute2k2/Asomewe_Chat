@@ -9,5 +9,9 @@ class StoreServices {
   static getUser(String id) {
     return FirebaseFirestore.instance.collection('users').where('uid', isEqualTo: id).get();
   }
+
+  getCurrentUserID() {}
+
+  getIncomingFriendRequests(String currentUserID) {}
   
 }

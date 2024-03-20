@@ -112,7 +112,7 @@ class _NavigatorHomeScreenState extends State<NavigatorHomeScreen> {
                 minWidth: 40,
                 onPressed: () {
                   setState(() {
-                    currentScreen = const ListFriendsScreen();
+                   currentScreen = const ListFriendsScreen();
                     currentTab = 1;
                   });
                 },
