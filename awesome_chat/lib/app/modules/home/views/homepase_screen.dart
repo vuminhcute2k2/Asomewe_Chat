@@ -65,12 +65,12 @@ class _HomePaseScreenState extends State<HomePaseScreen> {
       child: Scaffold(
         body: SingleChildScrollView(
           child: SizedBox(
-            height: 800,
+            height: MediaQuery.of(context).size.height * 0.8,
             child: Column(
               children: [
                 Container(
-                  width: 500,
-                  height: 250,
+                  width: MediaQuery.of(context).size.width * 1,
+                  height:MediaQuery.of(context).size.width * 0.5 ,
                   decoration: BoxDecoration(
                     gradient: AppColors.backgroundColorApp,
                   ),
@@ -79,7 +79,7 @@ class _HomePaseScreenState extends State<HomePaseScreen> {
                     child: Column(
                       children: [
                         Expanded(
-                          child: Container(
+                          
                             child: Column(
                               children: [
                                 Container(
@@ -155,11 +155,10 @@ class _HomePaseScreenState extends State<HomePaseScreen> {
                                 ),
                               ],
                             ),
-                          ),
                         ),
                         Container(
                           width: double.infinity,
-                          height: 30,
+                          height: MediaQuery.of(context).size.height * 0.03,
                           decoration: const BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.only(

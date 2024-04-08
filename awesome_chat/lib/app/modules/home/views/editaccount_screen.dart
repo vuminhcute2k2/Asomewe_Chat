@@ -26,15 +26,16 @@ class _EditAccountScreenState extends State<EditAccountScreen> {
   @override
   Widget build(BuildContext context) {
     return SafeArea(
+      top: false,
       child: Scaffold(
         body: SingleChildScrollView(
           child: SizedBox(
-            height: 800,
+            height: MediaQuery.of(context).size.height * 1,
             child: Column(
               children: [
                 Container(
-                  width: 500,
-                  height: 150,
+                  width: MediaQuery.of(context).size.width * 1,
+                  height: MediaQuery.of(context).size.height * 0.25,
                   decoration: BoxDecoration(
                     gradient: AppColors.backgroundColorApp,
                   ),
@@ -43,7 +44,6 @@ class _EditAccountScreenState extends State<EditAccountScreen> {
                     child: Column(
                       children: [
                         Expanded(
-                          child: Container(
                             child: Column(
                               children: [
                                 Container(
@@ -105,11 +105,10 @@ class _EditAccountScreenState extends State<EditAccountScreen> {
                                 ),
                               ],
                             ),
-                          ),
                         ),
                         Container(
-                          width: double.infinity,
-                          height: 30,
+                          width: MediaQuery.of(context).size.width * 1,
+                          height: MediaQuery.of(context).size.height * 0.04,
                           decoration: const BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.only(

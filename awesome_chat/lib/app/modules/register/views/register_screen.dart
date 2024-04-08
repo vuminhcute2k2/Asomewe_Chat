@@ -13,6 +13,7 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
+ 
   bool isChecked = false;
   RegisterController registerController = Get.put(RegisterController());
   @override
@@ -166,7 +167,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             alignment: Alignment.center,
                             children: [
                               if (isChecked)
-                                Icon(
+                                const Icon(
                                   Icons.check,
                                   color: Colors
                                       .white, // Đổi màu của icon để nó hiển thị trên nền màu của checkbox

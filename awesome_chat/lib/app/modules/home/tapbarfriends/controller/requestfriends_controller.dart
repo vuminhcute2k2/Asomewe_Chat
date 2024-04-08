@@ -1,11 +1,12 @@
 import 'package:awesome_chat/model/request_friends.dart';
+import 'package:awesome_chat/themes/strings.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:get/get.dart';
 
 class RequestFriendsController extends GetxController {
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final DatabaseReference _database = FirebaseDatabase.instance.reference();
+  final DatabaseReference _database = FirebaseDatabase.instance.ref();
 
   String? currentUserID;
   RxList<Map<String, dynamic>> incomingRequests = <Map<String, dynamic>>[].obs;
@@ -31,7 +32,7 @@ class RequestFriendsController extends GetxController {
       return;
     }
     _database
-        .child('request_friends')
+        .child(AppStrings.requestfriends)
         .orderByChild('receiverId')
         .equalTo(currentUserID)
         .onValue
@@ -66,7 +67,7 @@ class RequestFriendsController extends GetxController {
       return;
     }
     _database
-        .child('request_friends')
+        .child(AppStrings.requestfriends)
         .orderByChild('senderId')
         .equalTo(currentUserID)
         .onValue
@@ -109,7 +110,7 @@ Future<void> acceptFriendRequest(FriendRequest friendRequest, String currentUser
 
   // Xóa dữ liệu của id trùng với receiverId trong nút request_friends
   await _database
-      .child('request_friends')
+      .child(AppStrings.requestfriends)
       .orderByChild('receiverId')
       .equalTo(currentUserID)
       .once()
@@ -118,22 +119,17 @@ Future<void> acceptFriendRequest(FriendRequest friendRequest, String currentUser
       Map<dynamic, dynamic>? data = snapshot.snapshot.value as Map<dynamic, dynamic>?;
       data?.forEach((key, value) {
         if (value['receiverId'] == currentUserID) {
-          _database.child('request_friends').child(key).remove();
+          _database.child(AppStrings.requestfriends).child(key).remove();
         }
       });
     }
   });
-  print('receiverName: ${friendRequest.receiverName}');
-  print('receiverPhotoUrl: ${friendRequest.receiverPhotoUrl}');
-  print('senderName: ${friendRequest.senderName}');
-  print('senderPhotoUrl: ${friendRequest.senderPhotoUrl}');
-  
   
 }
 
 Future<void> addFriend(String userId, Map<String, dynamic> friendInfo) async {
     await _database
-        .child('friends')
+        .child(AppStrings.friends)
         .child(userId)
         .child(friendInfo['userId'])
         .set(friendInfo);

@@ -74,7 +74,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               ),
                     SingleChildScrollView(
                       child: SizedBox(
-                        height: 800,
+                        height: MediaQuery.of(context).size.height * 1,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -97,8 +97,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       child: Row(
                                         children: [
                                           Container(
-                                              width: 70,
-                                              height: 70,
+                                              width: MediaQuery.of(context).size.width *0.14 ,
+                                              height: MediaQuery.of(context).size.height * 0.07,
                                               decoration: BoxDecoration(
                                                 border: Border.all(
                                                   width: 3,

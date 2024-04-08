@@ -25,7 +25,6 @@ class ItemAllFriends extends GetView<AllFriendsController> {
                     ? Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Section header for the letter
                           Container(
                             width: double.infinity,
                             color: AppColors.colorGrayBackground,
@@ -38,7 +37,6 @@ class ItemAllFriends extends GetView<AllFriendsController> {
                               ),
                             ),
                           ),
-                          // List of users for the letter
                           ListView.builder(
                             shrinkWrap: true,
                             physics: const NeverScrollableScrollPhysics(),
@@ -77,79 +75,69 @@ class ItemAllFriends extends GetView<AllFriendsController> {
                                       subtitle: Text(email ?? 'No email'),
                                       trailing: GestureDetector(
                                         onTap: () async {
-                                          User? currentUser =
-                                              FirebaseAuth.instance.currentUser;
-                                          String? senderId;
-                                          String? senderName;
-                                          String? senderPhotoUrl;
-                                          String? receiverId;
-                                          String? receiverPhotoUrl;
-                                          String? receiverName;
+                                          bool isFriendRequestSent = controller.friendRequestStatus[userId]?.value ?? false;
+                                          // Kiểm tra xem userId có phải là senderId và yêu cầu kết bạn đã được gửi
+                                          if (userId == controller.currentUserID && isFriendRequestSent) {
+                                            // Nếu đã gửi yêu cầu kết bạn, hủy yêu cầu
+                                            controller.cancelFriendsRequest(userId);
+                                          } else {
+                                            // Nếu chưa gửi yêu cầu kết bạn, gửi yêu cầu mới
+                                            User? currentUser = FirebaseAuth.instance.currentUser;
+                                            if (currentUser != null) {
+                                              String? senderId = currentUser.uid;
+                                              String? senderName;
+                                              String? senderPhotoUrl;
+                                              String? receiverId = userData['uid'];
+                                              String? receiverPhotoUrl = userData['image'];
+                                              String? receiverName = userData['fullname'];
 
-                                          if (currentUser != null) {
-                                            senderId = currentUser.uid;
-                                            receiverId = userData['uid'];
-                                            receiverName = userData['fullname'];
-                                            receiverPhotoUrl = userData['image'];
+                                              try {
+                                                DocumentSnapshot snapshot = await FirebaseFirestore.instance.collection('users').doc(senderId).get();
+                                                Map<String, dynamic>? userData = snapshot.data() as Map<String, dynamic>?;
 
-                                            try {
-                                              DocumentSnapshot snapshot =
-                                                  await FirebaseFirestore
-                                                      .instance
-                                                      .collection('users')
-                                                      .doc(senderId)
-                                                      .get();
-                                              Map<String, dynamic>? userData =
-                                                  snapshot.data()
-                                                      as Map<String, dynamic>?;
-
-                                              if (userData != null) {
-                                                senderName =
-                                                    userData['fullname']
-                                                        as String?;
-                                                senderPhotoUrl =
-                                                    userData['image']
-                                                        as String?;
+                                                if (userData != null) {
+                                                  senderName = userData['fullname'] as String?;
+                                                  senderPhotoUrl = userData['image'] as String?;
+                                                }
+                                              } catch (e) {
+                                                // Xử lý lỗi khi lấy dữ liệu từ Cloud Firestore
+                                                print('Error fetching user data: $e');
                                               }
-                                            } catch (e) {
-                                              // Xử lý lỗi khi lấy dữ liệu từ Cloud Firestore
-                                              print(
-                                                  'Error fetching user data: $e');
-                                            }
-                                          } else {
-                                            // Xử lý trường hợp không có người dùng đăng nhập
-                                          }
 
-                                          if (senderId != null &&
-                                              receiverId != null &&
-                                              senderName != null) {
-                                            controller.sendFriendRequest(
-                                              senderId,
-                                              receiverId, 
-                                              senderName,
-                                              senderPhotoUrl,
-                                              receiverPhotoUrl,
-                                              receiverName,
-                                            );
-                                          } else {
-                                            // Xử lý trường hợp không tìm thấy thông tin cần thiết
+                                              if (senderId != null && receiverId != null && senderName != null) {
+                                                controller.sendFriendRequest(
+                                                  senderId,
+                                                  receiverId,
+                                                  senderName,
+                                                  senderPhotoUrl,
+                                                  receiverPhotoUrl,
+                                                  receiverName,
+                                                );
+                                              } else {
+                                                // Xử lý trường hợp không tìm thấy thông tin cần thiết
+                                              }
+                                            } else {
+                                              // Xử lý trường hợp không có người dùng đăng nhập
+                                            }
                                           }
                                         },
                                         child: Container(
                                           width: 73,
                                           height: 30,
-                                          decoration: const BoxDecoration(
-                                            color: AppColors.colorVioletText,
-                                            borderRadius: BorderRadius.all(
-                                                Radius.circular(18)),
+                                          decoration: BoxDecoration(
+                                            color: controller.isFriendRequestSent.value
+                                                ? AppColors.colorVioletText
+                                                : AppColors.colorVioletText,
+                                            borderRadius: BorderRadius.circular(18),
                                           ),
-                                          child: const Center(
-                                              child: Text(
-                                            'Kết bạn',
-                                            style: TextStyle(
-                                              color: Colors.white,
+                                          child: Center(
+                                            child: Text(
+                                              controller.isFriendRequestSent.value ? 'Hủy' : 'Kết bạn',
+                                              style: const TextStyle(
+                                                color: Colors.white,
+                                              ),
                                             ),
-                                          )),
+                                          ),
                                         ),
                                       ),
                                     );
@@ -164,9 +152,11 @@ class ItemAllFriends extends GetView<AllFriendsController> {
                           ),
                         ],
                       )
-                    : Container(); // Return an empty container if users list is empty
+                    : Container();
               },
             ),
     );
   }
 }
+
+

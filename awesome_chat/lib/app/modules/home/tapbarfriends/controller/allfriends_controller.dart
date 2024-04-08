@@ -1,84 +1,84 @@
 import 'dart:convert';
-
 import 'package:awesome_chat/model/request_friends.dart';
+import 'package:awesome_chat/themes/strings.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'dart:convert';
-
-
-import 'package:get/get.dart';
-
 class AllFriendsController extends GetxController {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
   final DatabaseReference _database = FirebaseDatabase.instance.ref();
   final SharedPreferences _prefs = Get.find();
-
-  RxBool isLoading = true.obs;
+  String? currentUserID;
+  RxBool isLoading = false.obs;
+  RxBool isFriendRequestSent = false.obs;
   List<Map<String, dynamic>> allFriendsData = [];
-  Map<String, List<DataSnapshot>> groupedUsers =
-      <String, List<DataSnapshot>>{}.obs;
+  Map<String, List<DataSnapshot>> groupedUsers = <String, List<DataSnapshot>>{}.obs;
   RxList<String> letters = <String>[].obs;
+  Stream<bool> get friendRequestSentStream => isFriendRequestSent.stream;
+  Map<String, RxBool> friendRequestStatus = {};
+
   @override
   void onInit() {
-    fetchFriends();
-    fetchAllFriends(); // lấy dữ liệu từ Realtime Database
     super.onInit();
+    _auth.authStateChanges().listen((user) {
+      if (user != null) {
+        currentUserID = user.uid;
+        fetchFriends();
+        fetchAllFriends();
+        super.onInit();
+      } else {
+        currentUserID = null;
+      }
+    });
   }
 
-//hàm chuyển đổi dữ liệu từ cloud firestore về local rồi update dữ liệu lên realtime
   Future<void> fetchFriends() async {
     isLoading.value = true;
-    try {
-      final QuerySnapshot querySnapshot =
-          await FirebaseFirestore.instance.collection('users').get();
-      final List<Map<String, dynamic>> userDataList = querySnapshot.docs
-          .map((doc) => doc.data() as Map<String, dynamic>)
-          .toList();
+  try {
+    final QuerySnapshot querySnapshot = await FirebaseFirestore.instance.collection(AppStrings.users).get();
+    final List<Map<String, dynamic>> userDataList = querySnapshot.docs
+        .map((doc) => doc.data() as Map<String, dynamic>)
+        .toList();
 
-      print('Fetched data from Firestore: $userDataList');
-      //ma hoa thanh file chuoi json
-      final jsonString = json.encode(userDataList);
-      print('Json String: $jsonString');
-      //chuyen du lieu ve local
-      await _prefs.setString('userData', jsonString);
+    // Clear current status
+    friendRequestStatus.clear();
 
-      print('Saved data to SharedPreferences: $jsonString');
-      //update len realtime
-      await updateFriendsOnRealtimeDatabase(userDataList);
-
-      print('Updated data on Realtime Database');
-    } catch (e) {
-      print('Error fetching friends: $e');
-    } finally {
-      isLoading.value = false;
+    // Update status for each user
+    for (final userData in userDataList) {
+      final String userId = userData['uid'];
+      final bool isSent = await checkFriendRequestSent(userId); // Chờ kết quả trả về từ hàm checkFriendRequestSent
+      friendRequestStatus[userId] = isSent.obs; // Lưu trạng thái của từng người dùng
     }
+
+    final jsonString = json.encode(userDataList);
+    await _prefs.setString('userData', jsonString);
+
+    await updateFriendsOnRealtimeDatabase(userDataList);
+  } catch (e) {
+    print('Error fetching friends: $e');
+  } finally {
+    isLoading.value = false;
+  }
   }
 
-  //hàm cập nhật dữ liệu lên realtime
   Future<void> updateFriendsOnRealtimeDatabase(
       List<Map<String, dynamic>> dataList) async {
     print('Start updating friends on Realtime Database...');
     try {
-      // Xóa dữ liệu cũ trên Realtime Database
-      await _database.child('all_friends').remove();
-      // Tạo một danh sách các Future để chờ hoàn thành tất cả các lệnh set
+      await _database.child(AppStrings.allfriends).remove();
+
       List<Future<void>> futures = [];
 
-      // Duyệt qua từng mục trong danh sách dữ liệu
       dataList.asMap().forEach((index, data) {
-        // Tạo một tham chiếu đến nút cụ thể trong Firebase Realtime Database
-        DatabaseReference reference = _database.child('all_friends').push();
-
-        // Thêm lệnh set dữ liệu vào danh sách Future
+        DatabaseReference reference = _database.child(AppStrings.allfriends).push();
         futures.add(reference.set(data));
       });
 
-      // Chờ cho tất cả các lệnh set hoàn thành
       await Future.wait(futures);
 
-      // Cập nhật biến allFriendsData với dữ liệu mới từ Realtime Database
       allFriendsData.clear();
       allFriendsData.addAll(dataList);
 
@@ -88,32 +88,20 @@ class AllFriendsController extends GetxController {
     }
   }
 
-//hàm để cập nhật dữ liệu trên realtime vào allFriendsData để cập nhật dữ liệu lên màn hình
-
   Future<void> fetchAllFriends() async {
     isLoading(true);
     try {
-      // Thực hiện theo dõi sự kiện thay đổi dữ liệu từ Realtime Database
       _database
-          .child('all_friends')
+          .child(AppStrings.allfriends)
           .orderByChild('fullname')
           .onValue
           .listen((event) {
         final dataSnapshot = event.snapshot;
-
         final Map<dynamic, dynamic>? dataSnapshotValue =
             dataSnapshot.value as Map<dynamic, dynamic>?;
 
         if (dataSnapshotValue != null) {
-          // Tạo một list để lưu các chữ cái đầu tiên
           List<String> newLetters = [];
-          // // Tạo một list để lưu các chữ cái đầu tiên và sắp xếp chúng theo thứ tự bảng chữ cái
-          // List<String> newLetters = dataSnapshotValue.keys
-          //     .map<String>((key) => key.substring(0, 1).toUpperCase())
-          //     .toSet()
-          //     .toList()
-          //   ..sort();
-          // Tạo một map để nhóm người dùng có cùng chữ cái đầu tiên vào 1 nhóm
           Map<String, List<DataSnapshot>> newGroupedUsers = {};
 
           dataSnapshotValue.forEach((key, value) {
@@ -121,85 +109,142 @@ class AllFriendsController extends GetxController {
               String? fullname = value['fullname'];
               if (fullname != null && fullname.isNotEmpty) {
                 String firstLetter = fullname[0].toUpperCase();
-                // Kiểm tra xem đã có chữ cái đầu tiên chưa, nếu chưa thì tạo mới
                 if (!newGroupedUsers.containsKey(firstLetter)) {
                   newLetters.add(firstLetter);
                   newGroupedUsers[firstLetter] = [];
                 }
 
-                // Tạo một đối tượng DataSnapshot và thêm vào nhóm tương ứng
                 DataSnapshot snapshot = event.snapshot;
                 newGroupedUsers[firstLetter]!.add(snapshot);
               }
             }
           });
 
-          // Cập nhật danh sách chữ cái đầu tiên
           letters.assignAll(newLetters);
-          // Cập nhật nhóm người dùng
           groupedUsers.assignAll(newGroupedUsers);
         }
 
-        isLoading(false); // Đánh dấu là đã tải xong dữ liệu
+        isLoading(false);
       });
     } catch (e) {
-      // Xử lý lỗi
-      isLoading(false); // Đánh dấu là đã tải xong dữ liệu (nếu có lỗi)
+      isLoading(false);
     }
   }
-  //hàm gửi lời mời kết bạn 
-  void sendFriendRequest(String senderId, String receiverId, String senderName, String? senderPhotoUrl, String? receiverPhotoUrl,String? receiverName) {
-  FriendRequest friendRequest = FriendRequest(
+
+  void sendFriendRequest(String senderId, String receiverId, String senderName,
+      String? senderPhotoUrl, String? receiverPhotoUrl, String? receiverName) {
+    FriendRequest friendRequest = FriendRequest(
     senderId: senderId,
     receiverId: receiverId,
     senderName: senderName,
-    receiverName: receiverName?? '',
-    senderPhotoUrl: senderPhotoUrl??'',
-    receiverPhotoUrl: receiverPhotoUrl??'',
+    receiverName: receiverName ?? '',
+    senderPhotoUrl: senderPhotoUrl ?? '',
+    receiverPhotoUrl: receiverPhotoUrl ?? '',
   );
 
-  DatabaseReference reference = _database.child('request_friends').push();
-  reference.set(friendRequest.toJson());
+  DatabaseReference reference = _database.child(AppStrings.requestfriends).push();
+  reference.set(friendRequest.toJson()).then((value) {
+    // Gửi yêu cầu kết bạn thành công
+    friendRequestStatus[receiverId]?.value = true; // Cập nhật trạng thái của người dùng cụ thể
+    print('aaaaa : $friendRequestStatus');
+    // Cập nhật lại trạng thái và giao diện
+    isFriendRequestSent.value = true;
+    print('bbbbb: $isFriendRequestSent');
+    // Cập nhật trạng thái nút "Kết bạn" của người nhận thành "Hủy"
+    update();
+  }).catchError((error) {
+    print('Error sending friend request: $error');
+    // Xử lý lỗi khi gửi yêu cầu kết bạn
+  });
+  }
+
+  void cancelFriendsRequest(String receiverId) {
+  _database
+      .child(AppStrings.requestfriends)
+      .orderByChild('senderId')
+      .equalTo(currentUserID)
+      .once()
+      .then((snapshot) {
+    if (snapshot.snapshot.value != null) {
+      Map<dynamic, dynamic>? data =
+          snapshot.snapshot.value as Map<dynamic, dynamic>?;
+      data?.forEach((key, value) {
+        if (value['receiverId'] == receiverId) {
+          _database.child(AppStrings.requestfriends).child(key).remove().then((value) {
+            // Hủy yêu cầu kết bạn thành công
+            friendRequestStatus[receiverId]?.value = false; // Cập nhật trạng thái của người dùng cụ thể
+            // Cập nhật lại trạng thái và giao diện
+            isFriendRequestSent.value = false;
+          }).catchError((error) {
+            print('Error cancelling friend request: $error');
+            // Xử lý lỗi khi hủy yêu cầu kết bạn
+          });
+        }
+      });
+    }
+  });
 }
 
-Future<String?> getSenderName(String senderId) async {
-  try {
-    DocumentSnapshot documentSnapshot = await FirebaseFirestore.instance
-        .collection('users')
-        .doc(senderId)
-        .get();
 
-    if (documentSnapshot.exists) {
-      Map<String, dynamic> userData = documentSnapshot.data() as Map<String, dynamic>;
-      String? senderName = userData['fullname'] as String?;
-      return senderName;
+  Future<bool> checkFriendRequestSent(String? receiverId) async {
+    try {
+    DatabaseEvent event = await _database
+        .child(AppStrings.requestfriends)
+        .orderByChild('receiverId')
+        .equalTo(receiverId)
+        .once();
+
+    if (event.snapshot.value != null) {
+      Map<dynamic, dynamic>? data =
+          event.snapshot.value as Map<dynamic, dynamic>?;
+
+      // Kiểm tra xem có bất kỳ yêu cầu nào từ senderId tới receiverId không
+      return data!.values.any((value) => value['receiverId'] == receiverId);
     } else {
-      return null;
+      return false;
     }
   } catch (e) {
-    print('Error getting sender name: $e');
-    return null;
+    print('Error checking friend request status: $e');
+    return false;
   }
-}
-Future<Map<String, dynamic>?> getUserData(String userId) async {
-  try {
-    DocumentSnapshot documentSnapshot = await FirebaseFirestore.instance
-        .collection('users')
-        .doc(userId)
-        .get();
+  }
 
-    if (documentSnapshot.exists) {
-      return documentSnapshot.data() as Map<String, dynamic>;
-    } else {
+  Future<String?> getSenderName(String senderId) async {
+    try {
+      DocumentSnapshot documentSnapshot = await FirebaseFirestore.instance
+          .collection(AppStrings.users)
+          .doc(senderId)
+          .get();
+
+      if (documentSnapshot.exists) {
+        Map<String, dynamic> userData =
+            documentSnapshot.data() as Map<String, dynamic>;
+        String? senderName = userData['fullname'] as String?;
+        return senderName;
+      } else {
+        return null;
+      }
+    } catch (e) {
+      print('Error getting sender name: $e');
       return null;
     }
-  } catch (e) {
-    print('Error getting user data: $e');
-    return null;
   }
-}
 
+  Future<Map<String, dynamic>?> getUserData(String userId) async {
+    try {
+      DocumentSnapshot documentSnapshot = await FirebaseFirestore.instance
+          .collection(AppStrings.users)
+          .doc(userId)
+          .get();
 
-
-
+      if (documentSnapshot.exists) {
+        return documentSnapshot.data() as Map<String, dynamic>;
+      } else {
+        return null;
+      }
+    } catch (e) {
+      print('Error getting user data: $e');
+      return null;
+    }
+  }
 }

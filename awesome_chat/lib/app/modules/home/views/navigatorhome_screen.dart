@@ -46,7 +46,7 @@ class _NavigatorHomeScreenState extends State<NavigatorHomeScreen> {
     HomePaseScreen(),
   ];
   final PageStorageBucket bucket = PageStorageBucket();
-  Widget currentScreen =  HomePaseScreen();
+  Widget currentScreen = const  HomePaseScreen();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
