@@ -170,7 +170,8 @@ class AllFriendsController extends GetxController {
     }).catchError((error) {
       print('Error sending friend request: $error');
     });
-  }
+}
+
 
 //hủy lời mời 
   void cancelFriendsRequest(String receiverId) async {

@@ -76,79 +76,70 @@ class ItemAllFriends extends GetView<AllFriendsController> {
                                       trailing: GestureDetector(
                                           onTap: () async {
                                             //bool isFriendRequestSent = controller.friendRequestStatus[userId]?.value ?? false;
-                                            bool isFriendRequestSent =
-                                                controller
-                                                        .isFriendRequestSentMap[
-                                                            userId]
-                                                        ?.value ??
-                                                    false;
+                                            bool isFriendRequestSent = controller.isFriendRequestSentMap[userData['uid']]?.value ?? false;
                                             if (isFriendRequestSent) {
                                               // Hủy yêu cầu kết bạn
-                                              controller
-                                                  .cancelFriendsRequest(userId);
+                                              controller.cancelFriendsRequest(userData['uid']);
                                               // Sau khi hủy, đặt lại trạng thái của nút được ấn thành "Kết bạn"
                                               // controller.friendRequestStatus[userId]?.value = false;
                                               controller
                                                   .isFriendRequestSentMap[
-                                                      userId]
+                                                      userData['uid']]
                                                   ?.value = false;
                                             } else {
                                               // Gửi yêu cầu kết bạn
-                                              User? currentUser = FirebaseAuth.instance.currentUser;
-                                              if (currentUser != null) {
-                                                final senderId = currentUser.uid;
-                                                final senderName = await controller.getSenderName(senderId);
-                                                if (senderName != null) {
-                                                  final senderPhotoUrl = currentUser.photoURL ?? '';
-                                                  final receiverPhotoUrl = userData['image'] ?? '';
-                                                  final receiverName = userData['fullname'] ?? '';
-                                                  controller.sendFriendRequest(
-                                                    senderId,
-                                                    userId,
-                                                    senderName,
-                                                    senderPhotoUrl,
-                                                    receiverPhotoUrl,
-                                                    receiverName,
-
-                                                  );
-                                                  // Sau khi gửi yêu cầu, đặt lại trạng thái của nút được ấn thành "Hủy"
-                                                  // controller.friendRequestStatus[userId]?.value = true;
-                                                  controller.isFriendRequestSentMap[userId]?.value = true;
-                                                }
-                                              }
-
-                                              // User? currentUser = FirebaseAuth
-                                              //     .instance.currentUser;
+                                              // User? currentUser = FirebaseAuth.instance.currentUser;
                                               // if (currentUser != null) {
-                                              //   final senderId =
-                                              //       currentUser.uid;
-                                              //   final receiverId = userData['uid']; // Lấy UID của người nhận từ dữ liệu người dùng
-                                              //   final senderName =await controller.getSenderName(senderId);
-                                              //   if (senderName != null &&
-                                              //       receiverId != null) {
-                                              //     final senderPhotoUrl =
-                                              //         currentUser.photoURL ??
-                                              //             '';
-                                              //     final receiverPhotoUrl =
-                                              //         userData['image'] ?? '';
-                                              //     final receiverName =
-                                              //         userData['fullname'] ??
-                                              //             '';
+                                              //   final senderId = currentUser.uid;
+                                              //   final senderName = await controller.getSenderName(senderId);
+                                              //   if (senderName != null) {
+                                              //     final senderPhotoUrl = currentUser.photoURL ?? '';
+                                              //     final receiverPhotoUrl = userData['image'] ?? '';
+                                              //     final receiverName = userData['fullname'] ?? '';
                                               //     controller.sendFriendRequest(
                                               //       senderId,
-                                              //       receiverId, // Sử dụng UID của người nhận
+                                              //       userId,
                                               //       senderName,
                                               //       senderPhotoUrl,
                                               //       receiverPhotoUrl,
                                               //       receiverName,
+
                                               //     );
                                               //     // Sau khi gửi yêu cầu, đặt lại trạng thái của nút được ấn thành "Hủy"
-                                              //     controller
-                                              //         .isFriendRequestSentMap[
-                                              //             userId]
-                                              //         ?.value = true;
+                                              //     // controller.friendRequestStatus[userId]?.value = true;
+                                              //     controller.isFriendRequestSentMap[userId]?.value = true;
                                               //   }
                                               // }
+
+                                              User? currentUser = FirebaseAuth
+                                                  .instance.currentUser;
+                                              if (currentUser != null) {
+                                                final senderId =
+                                                    currentUser.uid;
+                                                final receiverId = userData['uid']; // Lấy UID của người nhận từ dữ liệu người dùng
+                                                final senderName =await controller.getSenderName(senderId);
+                                                if (senderName != null &&
+                                                    receiverId != null) {
+                                                  final senderPhotoUrl =
+                                                      currentUser.photoURL ??
+                                                          '';
+                                                  final receiverPhotoUrl =
+                                                      userData['image'] ?? '';
+                                                  final receiverName =
+                                                      userData['fullname'] ??
+                                                          '';
+                                                  controller.sendFriendRequest(
+                                                    senderId,
+                                                    receiverId,// Sử dụng UID của người nhận
+                                                    senderName,
+                                                    senderPhotoUrl,
+                                                    receiverPhotoUrl,
+                                                    receiverName,
+                                                  );
+                                                  // Sau khi gửi yêu cầu, đặt lại trạng thái của nút được ấn thành "Hủy"
+                                                  controller.isFriendRequestSentMap[receiverId]?.value = true;
+                                                }
+                                              }
 
                                             }
                                           },
@@ -157,9 +148,7 @@ class ItemAllFriends extends GetView<AllFriendsController> {
                                               width: 73,
                                               height: 30,
                                               decoration: BoxDecoration(
-                                                color: controller
-                                                            .isFriendRequestSentMap[
-                                                                userId]
+                                                color: controller.isFriendRequestSentMap[userData['uid']]
                                                             ?.value ??
                                                         false
                                                     ? AppColors.colorVioletText
@@ -169,10 +158,8 @@ class ItemAllFriends extends GetView<AllFriendsController> {
                                               ),
                                               child: Center(
                                                 child: Text(
-                                                  controller
-                                                              .isFriendRequestSentMap[
-                                                                  userId]
-                                                              ?.value ??
+                                                  controller.isFriendRequestSentMap[userData['uid']]
+                                                            ?.value ??
                                                           false
                                                       ? 'Hủy'
                                                       : 'Kết bạn',
