@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:awesome_chat/app/modules/home/tapbarfriends/controller/requestfriends_controller.dart';
 import 'package:awesome_chat/model/request_friends.dart';
 import 'package:awesome_chat/themes/strings.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -13,13 +14,15 @@ class AllFriendsController extends GetxController {
   final SharedPreferences _prefs = Get.find();
   String? currentUserID;
   RxBool isLoading = false.obs;
-  RxBool isFriendRequestSent = false.obs;
+  // RxBool isFriendRequestSent = false.obs;
+  RxMap isFriendRequestSentMap = {}.obs;
   List<Map<String, dynamic>> allFriendsData = [];
-  Map<String, List<DataSnapshot>> groupedUsers = <String, List<DataSnapshot>>{}.obs;
+  Map<String, List<DataSnapshot>> groupedUsers =
+      <String, List<DataSnapshot>>{}.obs;
   RxList<String> letters = <String>[].obs;
-  Stream<bool> get friendRequestSentStream => isFriendRequestSent.stream;
+  // Stream<bool> get friendRequestSentStream => isFriendRequestSent.stream;
   Map<String, RxBool> friendRequestStatus = {};
-
+  var requestFriendsController = Get.put(RequestFriendsController());
   @override
   void onInit() {
     super.onInit();
@@ -37,31 +40,33 @@ class AllFriendsController extends GetxController {
 
   Future<void> fetchFriends() async {
     isLoading.value = true;
-  try {
-    final QuerySnapshot querySnapshot = await FirebaseFirestore.instance.collection(AppStrings.users).get();
-    final List<Map<String, dynamic>> userDataList = querySnapshot.docs
-        .map((doc) => doc.data() as Map<String, dynamic>)
-        .toList();
+    try {
+      final QuerySnapshot querySnapshot =
+          await FirebaseFirestore.instance.collection(AppStrings.users).get();
+      final List<Map<String, dynamic>> userDataList = querySnapshot.docs
+          .map((doc) => doc.data() as Map<String, dynamic>)
+          .toList();
 
-    // Clear current status
-    friendRequestStatus.clear();
+      // Clear current status
+      friendRequestStatus.clear();
+      isFriendRequestSentMap.clear(); // Clear the map before updating
 
-    // Update status for each user
-    for (final userData in userDataList) {
-      final String userId = userData['uid'];
-      final bool isSent = await checkFriendRequestSent(userId); // Chờ kết quả trả về từ hàm checkFriendRequestSent
-      friendRequestStatus[userId] = isSent.obs; // Lưu trạng thái của từng người dùng
+      // Update status for each user
+      for (final userData in userDataList) {
+        final String userId = userData['uid'];
+        final bool isSent = await checkFriendRequestSent(userId); // Chờ kết quả trả về từ hàm checkFriendRequestSent
+        // friendRequestStatus[userId] = isSent.obs; // Lưu trạng thái của từng người dùng
+        //isFriendRequestSentMap[userId] = isSent.obs; // Lưu trạng thái vào map
+      }
+
+      final jsonString = json.encode(userDataList);
+      await _prefs.setString('userData', jsonString);
+      await updateFriendsOnRealtimeDatabase(userDataList);
+    } catch (e) {
+      print('Error fetching friends: $e');
+    } finally {
+      isLoading.value = false;
     }
-
-    final jsonString = json.encode(userDataList);
-    await _prefs.setString('userData', jsonString);
-
-    await updateFriendsOnRealtimeDatabase(userDataList);
-  } catch (e) {
-    print('Error fetching friends: $e');
-  } finally {
-    isLoading.value = false;
-  }
   }
 
   Future<void> updateFriendsOnRealtimeDatabase(
@@ -73,7 +78,8 @@ class AllFriendsController extends GetxController {
       List<Future<void>> futures = [];
 
       dataList.asMap().forEach((index, data) {
-        DatabaseReference reference = _database.child(AppStrings.allfriends).push();
+        DatabaseReference reference =
+            _database.child(AppStrings.allfriends).push();
         futures.add(reference.set(data));
       });
 
@@ -131,82 +137,101 @@ class AllFriendsController extends GetxController {
     }
   }
 
+  //update UI cho button kết bạn khi ấn
+  void updateFriendRequestStatus(String userId, bool status) {
+    isFriendRequestSentMap[userId]?.value = status;
+    // Cập nhật giao diện
+    update();
+  }
+
   void sendFriendRequest(String senderId, String receiverId, String senderName,
       String? senderPhotoUrl, String? receiverPhotoUrl, String? receiverName) {
     FriendRequest friendRequest = FriendRequest(
-    senderId: senderId,
-    receiverId: receiverId,
-    senderName: senderName,
-    receiverName: receiverName ?? '',
-    senderPhotoUrl: senderPhotoUrl ?? '',
-    receiverPhotoUrl: receiverPhotoUrl ?? '',
-  );
+      senderId: senderId,
+      receiverId: receiverId,
+      senderName: senderName,
+      receiverName: receiverName ?? '',
+      senderPhotoUrl: senderPhotoUrl ?? '',
+      receiverPhotoUrl: receiverPhotoUrl ?? '',
+    );
 
-  DatabaseReference reference = _database.child(AppStrings.requestfriends).push();
-  reference.set(friendRequest.toJson()).then((value) {
-    // Gửi yêu cầu kết bạn thành công
-    friendRequestStatus[receiverId]?.value = true; // Cập nhật trạng thái của người dùng cụ thể
-    print('aaaaa : $friendRequestStatus');
-    // Cập nhật lại trạng thái và giao diện
-    isFriendRequestSent.value = true;
-    print('bbbbb: $isFriendRequestSent');
-    // Cập nhật trạng thái nút "Kết bạn" của người nhận thành "Hủy"
-    update();
-  }).catchError((error) {
-    print('Error sending friend request: $error');
-    // Xử lý lỗi khi gửi yêu cầu kết bạn
-  });
+    DatabaseReference reference = _database.child(AppStrings.requestfriends).push();
+    reference.set(friendRequest.toJson()).then((value) {
+      if (!isFriendRequestSentMap.containsKey(receiverId)) {
+        // Thêm receiverId vào isFriendRequestSentMap nếu chưa tồn tại
+        isFriendRequestSentMap[receiverId] = true.obs;
+      } else {
+        // Nếu đã tồn tại, cập nhật lại giá trị thành true
+        isFriendRequestSentMap[receiverId]?.value = true;
+      }
+      
+      print('Friend request sent successfully.');
+      updateFriendRequestStatus(receiverId, true); // Cập nhật lại trạng thái và giao diện
+    }).catchError((error) {
+      print('Error sending friend request: $error');
+    });
   }
 
-  void cancelFriendsRequest(String receiverId) {
-  _database
-      .child(AppStrings.requestfriends)
-      .orderByChild('senderId')
-      .equalTo(currentUserID)
-      .once()
-      .then((snapshot) {
-    if (snapshot.snapshot.value != null) {
-      Map<dynamic, dynamic>? data =
-          snapshot.snapshot.value as Map<dynamic, dynamic>?;
-      data?.forEach((key, value) {
-        if (value['receiverId'] == receiverId) {
-          _database.child(AppStrings.requestfriends).child(key).remove().then((value) {
-            // Hủy yêu cầu kết bạn thành công
-            friendRequestStatus[receiverId]?.value = false; // Cập nhật trạng thái của người dùng cụ thể
-            // Cập nhật lại trạng thái và giao diện
-            isFriendRequestSent.value = false;
-          }).catchError((error) {
-            print('Error cancelling friend request: $error');
-            // Xử lý lỗi khi hủy yêu cầu kết bạn
-          });
-        }
-      });
-    }
-  });
+//hủy lời mời 
+  void cancelFriendsRequest(String receiverId) async {
+  try {
+    // Xóa lời mời trong database
+    await _database
+        .child(AppStrings.requestfriends)
+        .orderByChild('senderId')
+        .equalTo(currentUserID)
+        .once()
+        .then((snapshot) {
+      if (snapshot.snapshot.value != null) {
+        Map<dynamic, dynamic>? data =
+            snapshot.snapshot.value as Map<dynamic, dynamic>?;
+        data?.forEach((key, value) {
+          if (value['receiverId'] == receiverId) {
+            _database
+                .child(AppStrings.requestfriends)
+                .child(key)
+                .remove()
+                .then((value) {
+              // Hủy yêu cầu kết bạn thành công
+              isFriendRequestSentMap[receiverId]?.value = false;
+              // Cập nhật trạng thái và giao diện
+              updateFriendRequestStatus(receiverId, false);
+              // Xóa lời mời đã hủy khỏi danh sách lời mời đã gửi
+              requestFriendsController.removeCanceledRequest(receiverId);
+            }).catchError((error) {
+              print('Error cancelling friend request: $error');
+              // Xử lý lỗi khi hủy yêu cầu kết bạn
+            });
+          }
+        });
+      }
+    });
+  } catch (e) {
+    print('Error cancelling friend request: $e');
+  }
 }
 
 
   Future<bool> checkFriendRequestSent(String? receiverId) async {
     try {
-    DatabaseEvent event = await _database
-        .child(AppStrings.requestfriends)
-        .orderByChild('receiverId')
-        .equalTo(receiverId)
-        .once();
+      DatabaseEvent event = await _database
+          .child(AppStrings.requestfriends)
+          .orderByChild('receiverId')
+          .equalTo(receiverId)
+          .once();
 
-    if (event.snapshot.value != null) {
-      Map<dynamic, dynamic>? data =
-          event.snapshot.value as Map<dynamic, dynamic>?;
+      if (event.snapshot.value != null) {
+        Map<dynamic, dynamic>? data = event.snapshot.value as Map<dynamic, dynamic>?;
 
-      // Kiểm tra xem có bất kỳ yêu cầu nào từ senderId tới receiverId không
-      return data!.values.any((value) => value['receiverId'] == receiverId);
-    } else {
+        // Kiểm tra xem có bất kỳ yêu cầu nào từ senderId tới receiverId không
+        return data!.values.any((value) => value['receiverId'] == receiverId);
+      } else {
+        return false;
+      }
+    } catch (e) {
+      print('Error checking friend request status: $e');
       return false;
     }
-  } catch (e) {
-    print('Error checking friend request status: $e');
-    return false;
-  }
   }
 
   Future<String?> getSenderName(String senderId) async {
@@ -217,8 +242,7 @@ class AllFriendsController extends GetxController {
           .get();
 
       if (documentSnapshot.exists) {
-        Map<String, dynamic> userData =
-            documentSnapshot.data() as Map<String, dynamic>;
+        Map<String, dynamic> userData = documentSnapshot.data() as Map<String, dynamic>;
         String? senderName = userData['fullname'] as String?;
         return senderName;
       } else {
